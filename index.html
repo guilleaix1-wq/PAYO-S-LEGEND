@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payo's Legend | Cine Edition</title>
+    <style>
+        :root {
+            --primary: #28a745;
+            --bg: #1a1a1a;
+            --card: #2a2a2a;
+            --text: #ffffff;
+            --accent: #ffc107;
+            --danger: #ff4444;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            padding-bottom: 80px;
+        }
+
+        /* --- CONTROL DE AUDIO VERTICAL PRO --- */
+        .audio-controller {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+        }
+
+        #vol-icon {
+            font-size: 2rem;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px;
+            border-radius: 50%;
+            border: 2px solid #444;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        #vol-icon:hover {
+            transform: scale(1.1);
+            border-color: var(--primary);
+        }
+
+        .slider-wrapper {
+            display: none;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px 10px;
+            border-radius: 20px;
+            border: 1px solid #444;
+            animation: slideInUp 0.3s ease;
+        }
+
+        .audio-controller:hover .slider-wrapper {
+            display: block;
+        }
+
+        /* Estilo para que la bolita baje a tope */
+        #vol-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 8px;
+            height: 150px;
+            background: #444;
+            border-radius: 5px;
+            outline: none;
+            cursor: pointer;
+            /* Forzar verticalidad */
+            -webkit-appearance: slider-vertical;
+            writing-mode: bt-lr;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* La "bola" del slider */
+        #vol-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            background: var(--primary);
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+
+        #vol-slider::-moz-range-thumb {
+            width: 22px;
+            height: 22px;
+            background: var(--primary);
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Estilos generales del juego */
+        .box {
+            background: var(--card);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px auto;
+            max-width: 700px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 3.2rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border: 1px solid #444;
+            background: #333;
+            color: white;
+            font-size: 1.3rem;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 18px 30px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 15px;
+            transition: 0.3s;
+            font-size: 1.4rem;
+        }
+
+        button:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+
+        #reloj {
+            font-size: 4.5rem;
+            font-weight: 900;
+            color: var(--accent);
+        }
+
+        .pista-container {
+            background: #333;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 25px 0;
+            border-left: 8px solid var(--primary);
+            text-align: left;
+        }
+
+        .pista-texto {
+            color: #00ff00;
+            font-style: italic;
+            font-size: 1.5rem;
+            line-height: 1.5;
+            overflow-wrap: break-word;
+        }
+
+        .resultado-item {
+            text-align: left;
+            border-bottom: 1px solid #444;
+            padding: 25px;
+            margin-bottom: 15px;
+            background: #252525;
+            border-radius: 12px;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .texto-leyenda {
+            font-size: 1.8rem;
+            line-height: 1.6;
+            margin: 10px 0;
+            color: #eee;
+        }
+
+        .autor-tag {
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            background: #333;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .ajustes-grid {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .input-mini {
+            width: 90px !important;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="audio-controller">
+        <span id="vol-icon" onclick="toggleMute()">🔊</span>
+        <div class="slider-wrapper">
+            <input type="range" id="vol-slider" min="0" max="1" step="0.01" value="0.5"
+                oninput="ajustarVolumen(this.value)">
+        </div>
+    </div>
+
+    <audio id="music-lobby" loop src="lobby.mp3"></audio>
+    <audio id="music-juego" loop src="juego.mp3"></audio>
+    <audio id="music-final" loop src="final.mp3"></audio>
+
+    <h1>👑 Payo's Legend</h1>
+
+    <div id="pantalla-inicio" class="box">
+        <p>¿Listo para forjar tu nombre, Guille?</p>
+        <input type="text" id="nombre" placeholder="Tu nombre de leyenda">
+        <input type="text" id="sala" placeholder="Código de la sala">
+        <button onclick="entrar()">ENTRAR A LA SALA</button>
+    </div>
+
+    <div id="pantalla-lobby" class="box" style="display:none;">
+        <h2 style="font-size: 2rem;">Sala: <span id="id-sala-actual" style="color: var(--primary);"></span></h2>
+        <ul id="lista-amigos"></ul>
+        <div id="panel-lider" style="display:none; border-top: 1px solid #444; padding-top: 25px; margin-top: 20px;">
+            <h3>⚙️ Ajustes del Líder</h3>
+            <div class="ajustes-grid">
+                <label>Tiempo:</label> <input type="number" id="input-tiempo" class="input-mini" value="90">s
+                <label>Pista:</label> <input type="number" id="input-caracteres" class="input-mini" value="100"> letras
+            </div>
+            <button onclick="guardarYEmpezar()" style="background: var(--accent); color: black;">¡FORJAR
+                LEYENDA!</button>
+        </div>
+    </div>
+
+    <div id="pantalla-juego" class="box" style="display:none;">
+        <div id="reloj">90s</div>
+        <h3 id="num-ronda">Ronda 1</h3>
+        <div class="pista-container">
+            <p id="pista-texto" class="pista-texto"></p>
+            <p>👥 Personajes: <span id="pista-personajes" style="color: var(--accent); font-weight: bold;"></span></p>
+        </div>
+        <textarea id="texto-historia" placeholder="Escribe el siguiente capítulo..." rows="5"></textarea>
+        <input type="text" id="personajes-input" placeholder="¿Quién aparece ahora?">
+        <button id="btn-enviar" onclick="enviar()">ENVIAR CAPÍTULO</button>
+    </div>
+
+    <div id="pantalla-resultados" class="box" style="display:none; max-width: 850px;">
+        <h2 id="titulo-presentacion">🍿 Crónicas de la Sala</h2>
+        <div id="contenedor-presentacion"></div>
+        <div id="controles-lider" style="display:none; margin-top:30px;">
+            <button id="btn-inicio-p" onclick="empezarP()">🎬 EMPEZAR LECTURA</button>
+            <button id="btn-sig-p" onclick="siguienteP()" style="background: #007bff; display:none;">SIGUIENTE PÁGINA
+                ➡️</button>
+            <button id="btn-reiniciar-p" onclick="reiniciarP()"
+                style="background: var(--accent); color:black; display:none;">🔄 NUEVA LEYENDA</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let miSala = "", soyLider = false;
+        let lastVolume = 0.5;
+        let isMuted = false;
+
+        function playMusic(id) {
+            ['music-lobby', 'music-juego', 'music-final'].forEach(m => {
+                const el = document.getElementById(m);
+                el.pause(); el.currentTime = 0;
+                el.volume = isMuted ? 0 : document.getElementById('vol-slider').value;
+            });
+            document.getElementById(id).play().catch(() => { });
+        }
+
+        function ajustarVolumen(v) {
+            const volSlider = document.getElementById('vol-slider');
+            let val = parseFloat(v);
+
+            // Si el slider toca el fondo (0), es mute total
+            isMuted = val === 0;
+
+            applyVolumeToAll(val);
+            actualizarIcono(val);
+        }
+
+        function toggleMute() {
+            const volSlider = document.getElementById('vol-slider');
+            if (!isMuted) {
+                lastVolume = volSlider.value;
+                volSlider.value = 0;
+                isMuted = true;
+                applyVolumeToAll(0);
+                actualizarIcono(0);
+            } else {
+                volSlider.value = lastVolume;
+                isMuted = false;
+                applyVolumeToAll(lastVolume);
+                actualizarIcono(lastVolume);
+            }
+        }
+
+        function applyVolumeToAll(v) {
+            ['music-lobby', 'music-juego', 'music-final'].forEach(m => {
+                document.getElementById(m).volume = v;
+            });
+        }
+
+        function actualizarIcono(v) {
+            const icon = document.getElementById('vol-icon');
+            if (v == 0) icon.innerText = "🔇";
+            else if (v < 0.5) icon.innerText = "🔉";
+            else icon.innerText = "🔊";
+        }
+
+        function entrar() {
+            miSala = document.getElementById('sala').value.trim().toUpperCase();
+            const nombre = document.getElementById('nombre').value.trim();
+            if (nombre && miSala) {
+                socket.emit('unirse_sala', { salaId: miSala, nombre });
+                playMusic('music-lobby');
+            }
+            document.getElementById('pantalla-inicio').style.display = 'none';
+            document.getElementById('pantalla-lobby').style.display = 'block';
+            document.getElementById('id-sala-actual').innerText = miSala;
+        }
+
+        function guardarYEmpezar() {
+            socket.emit('actualizar_ajustes', { salaId: miSala, tiempo: document.getElementById('input-tiempo').value, caracteres: document.getElementById('input-caracteres').value });
+            socket.emit('iniciar_juego', miSala);
+        }
+
+        function enviar() {
+            socket.emit('enviar_segmento', { salaId: miSala, texto: document.getElementById('texto-historia').value, personajes: document.getElementById('personajes-input').value || "Varios" });
+            document.getElementById('btn-enviar').disabled = true;
+            document.getElementById('btn-enviar').innerText = "✅ ENVIADO...";
+        }
+
+        function empezarP() { socket.emit('empezar_presentacion', miSala); }
+        function siguienteP() { socket.emit('siguiente_paso', miSala); }
+        function reiniciarP() { socket.emit('reiniciar_juego', miSala); }
+
+        socket.on('es_lider', (l) => {
+            soyLider = l;
+            if (soyLider) {
+                document.getElementById('panel-lider').style.display = 'block';
+                document.getElementById('controles-lider').style.display = 'block';
+            }
+        });
+
+        socket.on('actualizar_lista', (j) => { document.getElementById('lista-amigos').innerHTML = j.map(p => `<li>👤 ${p.nombre}</li>`).join(''); });
+
+        socket.on('timer_update', (s) => {
+            const r = document.getElementById('reloj');
+            if (r) { r.innerText = s + "s"; r.style.color = s <= 10 ? "var(--danger)" : "var(--accent)"; }
+        });
+
+        socket.on('nuevo_turno', (d) => {
+            if (d.ronda === 1) playMusic('music-juego');
+
+            document.getElementById('pantalla-lobby').style.display = 'none';
+            document.getElementById('pantalla-resultados').style.display = 'none';
+            document.getElementById('pantalla-juego').style.display = 'block';
+
+            document.getElementById('pista-texto').innerText = d.textoAnterior;
+            document.getElementById('pista-personajes').innerText = d.personajesAnteriores;
+
+            // Bloqueamos inputs y botón al principio del interludio
+            document.getElementById('texto-historia').value = "";
+            document.getElementById('personajes-input').value = "";
+            document.getElementById('texto-historia').disabled = true;
+            document.getElementById('personajes-input').disabled = true;
+            document.getElementById('btn-enviar').disabled = true;
+            document.getElementById('btn-enviar').innerText = "ESPERA...";
+            if (d.ronda === 1) {
+                document.getElementById('num-ronda').innerText = "¡Empieza la leyenda!";
+            } else {
+                document.getElementById('num-ronda').innerText = "Ronda " + d.ronda;
+            }
+        });
+
+        socket.on('empezar_a_escribir', () => {
+            document.getElementById('num-ronda').innerText = document.getElementById('num-ronda').innerText.replace(" (Lee la pista...)", "");
+            document.getElementById('texto-historia').disabled = false;
+            document.getElementById('personajes-input').disabled = false;
+            document.getElementById('btn-enviar').disabled = false;
+            document.getElementById('btn-enviar').innerText = "ENVIAR CAPÍTULO";
+            document.getElementById('texto-historia').focus(); // Para que no tengan ni que pinchar
+        });
+
+        socket.on('interludio_inicio', (data) => {
+            const reloj = document.getElementById('reloj');
+            const btn = document.getElementById('btn-enviar');
+
+            if (data.esPrimera) {
+                reloj.innerText = "¿LISTO? ";
+                btn.innerText = "¡PREPÁRATE!";
+            } else {
+                reloj.innerText = "¡LEE! ";
+                btn.innerText = "LEYENDO PISTA...";
+            }
+            reloj.style.color = "var(--accent)";
+        });
+
+        socket.on('mostrar_resultados', () => {
+            playMusic('music-final');
+            document.getElementById('pantalla-juego').style.display = 'none';
+            document.getElementById('pantalla-resultados').style.display = 'block';
+        });
+
+        socket.on('actualizar_presentacion', (d) => {
+            document.getElementById('btn-inicio-p').style.display = 'none';
+            document.getElementById('btn-sig-p').style.display = soyLider ? 'block' : 'none';
+            document.getElementById('titulo-presentacion').innerText = d.titulo;
+            document.getElementById('contenedor-presentacion').innerHTML = d.segmentos.map(s => `
+                <div class="resultado-item">
+                    <span class="autor-tag">${s.autor} narró:</span>
+                    <p class="texto-leyenda">${s.texto}</p>
+                </div>
+            `).join('');
+            if (d.esUltimo && soyLider) {
+                document.getElementById('btn-sig-p').style.display = 'none';
+                document.getElementById('btn-reiniciar-p').style.display = 'block';
+            }
+        });
+
+        socket.on('vuelta_a_lobby', () => {
+            playMusic('music-lobby');
+            document.getElementById('pantalla-resultados').style.display = 'none';
+            document.getElementById('pantalla-lobby').style.display = 'block';
+            document.getElementById('btn-reiniciar-p').style.display = 'none';
+            document.getElementById('btn-inicio-p').style.display = soyLider ? 'block' : 'none';
+
+            document.getElementById('contenedor-presentacion').innerHTML = "";
+            document.getElementById('titulo-presentacion').innerText = "";
+        });
+    </script>
+</body>
+
+</html>
